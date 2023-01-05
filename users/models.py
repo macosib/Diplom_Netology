@@ -12,7 +12,6 @@ USER_TYPE_CHOICES = (
 
 )
 
-
 class UserManager(BaseUserManager):
     """
     Класс для управления пользователями
@@ -87,8 +86,8 @@ class User(AbstractUser):
         return f'{self.first_name} {self.last_name}'
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = "Список пользователей"
+        verbose_name = 'User'
+        verbose_name_plural = "User list"
         ordering = ('email',)
 
 
