@@ -12,6 +12,7 @@ USER_TYPE_CHOICES = (
 
 )
 
+
 class UserManager(BaseUserManager):
     """
     Класс для управления пользователями
@@ -125,8 +126,8 @@ class ConfirmEmailToken(models.Model):
         verbose_name=_("When was this token generated")
     )
 
-    key = models.CharField(
-        _("Key"),
+    token = models.CharField(
+        _("Token"),
         max_length=64,
         db_index=True,
         unique=True
@@ -142,8 +143,8 @@ class ConfirmEmailToken(models.Model):
         return get_token_generator().generate_token()
 
     def save(self, *args, **kwargs):
-        if not self.key:
-            self.key = self.generate_key()
+        if not self.token:
+            self.token = self.generate_key()
         return super(ConfirmEmailToken, self).save(*args, **kwargs)
 
     def __str__(self):

@@ -13,13 +13,12 @@ class ContactSerializer(serializers.ModelSerializer):
             'user': {'write_only': True}
         }
 
-
-class UserRegisterSerializer(serializers.ModelSerializer):
+class AccountRegisterSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'password', 'password_confirm')
+        fields = ('id', 'email', 'company', 'position', 'password', 'password_confirm')
         read_only_fields = ('id',)
 
     def validate(self, data):
@@ -37,7 +36,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
                 {'password': error}
             )
         return data
-
 
 class UserSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(read_only=True, many=True)
