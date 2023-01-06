@@ -1,68 +1,64 @@
+import yaml
+from django.db.models import Q
 from django.http import JsonResponse
+from requests import get
 from rest_framework import status
-from rest_framework.authtoken.models import Token
-from rest_framework.generics import CreateAPIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
+from yaml import SafeLoader
 
-from users.models import User, Contact
-from users.permisssions import IsOwner
-from users.serializers import (
-    AccountRegisterSerializer, AccountLoginSerializer, AccountConfirmSerializer, AccountContactSerializer,
-    AccountSerializer, )
-from users.signals import new_user_registered
+from shops.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter
+from shops.permissions import IsShop
+from shops.serializers import PartnerUpdateSerializer, CategorySerializer, ShopSerializer, ProductInfoSerializer
+
 
 class PartnerUpdate(APIView):
-
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsShop]
+    serializer_class = PartnerUpdateSerializer
     """
     Класс для обновления прайса от поставщика
     """
+
     def post(self, request, *args, **kwargs):
-        if request.user.type != 'shop':
-            return JsonResponse({'Status': False, 'Error': 'Только для магазинов'}, status=403)
+        serializer = PartnerUpdateSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        url = serializer.validated_data.get('url')
+        try:
+            stream = get(url).content
+            data = yaml.load(stream, Loader=SafeLoader)
+        except Exception as error:
+            return Response({"status": "Failure", "error": "Failed to read file"}, status=status.HTTP_400_BAD_REQUEST)
 
-        url = request.data.get('url')
-        if url:
-            validate_url = URLValidator()
-            try:
-                validate_url(url)
-            except ValidationError as e:
-                return JsonResponse({'Status': False, 'Error': str(e)})
-            else:
-                stream = get(url).content
-                data = load_yaml(stream, Loader=Loader)
-                shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
+        shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
+        for category in data['categories']:
+            category_object, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
+            category_object.shops.add(shop.id)
+            category_object.save()
 
-                for category in data['categories']:
-                    category_object, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
-                    category_object.shops.add(shop.id)
-                    category_object.save()
+        ProductInfo.objects.filter(shop_id=shop.id).delete()
 
-                ProductInfo.objects.filter(shop_id=shop.id).delete()
-
-                for item in data['goods']:
-                    product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'])
-                    product_info = ProductInfo.objects.create(product_id=product.id,
-                                                              external_id=item['id'],
-                                                              model=item['model'],
-                                                              price=item['price'],
-                                                              price_rrc=item['price_rrc'],
-                                                              quantity=item['quantity'],
-                                                              shop_id=shop.id)
-                    for name, value in item['parameters'].items():
-                        parameter_object, _ = Parameter.objects.get_or_create(name=name)
-                        ProductParameter.objects.create(product_info_id=product_info.id,
-                                                        parameter_id=parameter_object.id,
-                                                        value=value)
-
-                return JsonResponse({'Status': True})
-
-        return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
-
-
+        for item in data['goods']:
+            product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'])
+            product_info = ProductInfo.objects.create(product_id=product.id,
+                                                      external_id=item['id'],
+                                                      model=item['model'],
+                                                      price=item['price'],
+                                                      price_rrc=item['price_rrc'],
+                                                      quantity=item['quantity'],
+                                                      shop_id=shop.id)
+            for name, value in item['parameters'].items():
+                parameter_object, _ = Parameter.objects.get_or_create(name=name)
+                ProductParameter.objects.create(product_info_id=product_info.id,
+                                                parameter_id=parameter_object.id,
+                                                value=value)
+        return Response({
+            "status": "Success",
+            'message': "Data uploaded successfully"
+        }, status=status.HTTP_200_OK)
 
 
 class CategoryView(ListAPIView):
@@ -71,9 +67,13 @@ class CategoryView(ListAPIView):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
+
+
 
 
 class ShopView(ListAPIView):
+    permission_classes = [IsAuthenticated]
     """
     Класс для просмотра списка магазинов
     """
@@ -81,10 +81,16 @@ class ShopView(ListAPIView):
     serializer_class = ShopSerializer
 
 
-class ProductInfoView(APIView):
+class ProductInfoView(ModelViewSet):
+
     """
     Класс для поиска товаров
     """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = ProductInfoSerializer
+
+
     def get(self, request, *args, **kwargs):
 
         query = Q(shop__state=True)
@@ -97,15 +103,12 @@ class ProductInfoView(APIView):
         if category_id:
             query = query & Q(product__category_id=category_id)
 
-        # фильтруем и отбрасываем дуликаты
         queryset = ProductInfo.objects.filter(
             query).select_related(
             'shop', 'product__category').prefetch_related(
             'product_parameters__parameter').distinct()
 
-        serializer = ProductInfoSerializer(queryset, many=True)
-
-        return Response(serializer.data)
+        return queryset
 
 
 class BasketView(APIView):
