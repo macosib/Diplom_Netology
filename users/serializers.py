@@ -5,14 +5,34 @@ from rest_framework import serializers
 from users.models import User, Contact, ConfirmEmailToken
 
 
-class ContactSerializer(serializers.ModelSerializer):
+class AccountContactSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contact
-        fields = ('id', 'city', 'street', 'house', 'structure', 'building', 'apartment', 'user', 'phone')
+        fields = ('id', 'city', 'street', 'house', 'structure', 'building', 'apartment', 'phone', 'user')
         read_only_fields = ('id',)
         extra_kwargs = {
             'user': {'write_only': True}
         }
+
+    def create(self, validated_data):
+        validated_data["user"] = self.context["request"].user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data["user"] = self.context["request"].user
+        return super().update(instance, validated_data)
+
+
+class AccountSerializer(serializers.ModelSerializer):
+    contacts = AccountContactSerializer(read_only=True, many=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'contacts')
+        read_only_fields = ('id',)
+
+    # def save(self):
+    #     user = CurrentUserDefault()
 
 
 class AccountRegisterSerializer(serializers.ModelSerializer):
@@ -77,12 +97,3 @@ class AccountConfirmSerializer(serializers.Serializer):
                 {"status": "Failure", "error": "It is necessary to provide an email and a token"}
             )
         return token
-
-
-class UserSerializer(serializers.ModelSerializer):
-    contacts = ContactSerializer(read_only=True, many=True)
-
-    class Meta:
-        model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'contacts')
-        read_only_fields = ('id',)
