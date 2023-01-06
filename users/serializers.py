@@ -1,9 +1,8 @@
-from django.contrib.auth.backends import UserModel
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from users.models import User, Contact
+from users.models import User, Contact, ConfirmEmailToken
 
 
 class ContactSerializer(serializers.ModelSerializer):
@@ -14,6 +13,7 @@ class ContactSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'user': {'write_only': True}
         }
+
 
 class AccountRegisterSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True, required=True)
@@ -46,6 +46,7 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
 class AccountLoginSerializer(serializers.Serializer):
     email = serializers.CharField(required=True)
     password = serializers.CharField(max_length=128, write_only=True, required=True)
@@ -61,6 +62,21 @@ class AccountLoginSerializer(serializers.Serializer):
         return user
 
 
+class AccountConfirmSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True)
+    token = serializers.CharField(max_length=128, write_only=True, required=True)
+
+    def validate(self, data):
+        email = data['email']
+        token_request = data['token']
+
+        token = ConfirmEmailToken.objects.filter(user__email=email,
+                                                 token=token_request).first()
+        if token is None:
+            raise serializers.ValidationError(
+                {"status": "Failure", "error": "It is necessary to provide an email and a token"}
+            )
+        return token
 
 
 class UserSerializer(serializers.ModelSerializer):

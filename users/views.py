@@ -5,9 +5,9 @@ from rest_framework.generics import CreateAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from users.models import User, ConfirmEmailToken
+from users.models import User
 from users.serializers import (
-    AccountRegisterSerializer, AccountLoginSerializer, )
+    AccountRegisterSerializer, AccountLoginSerializer, AccountConfirmSerializer, )
 from users.signals import new_user_registered
 
 
@@ -37,21 +37,18 @@ class ConfirmAccountView(APIView):
     """
     Класс для подтверждения регистрации пользователя.
     """
+    serializer_class = AccountConfirmSerializer
 
     def post(self, request):
-
-        if {'email', 'token'}.issubset(request.data):
-
-            token = ConfirmEmailToken.objects.filter(user__email=request.data['email'],
-                                                     token=request.data['token']).first()
-            if token:
-                token.user.is_active = True
-                token.user.save()
-                token.delete()
-                return JsonResponse({
-                    "status": "Success",
-                    'message': "Account confirmed"
-                }, status=status.HTTP_200_OK)
+        serializer = AccountConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            token = serializer.validated_data
+            token.user.save()
+            token.delete()
+            return JsonResponse({
+                "status": "Success",
+                'message': "Account confirmed"
+            }, status=status.HTTP_200_OK)
 
         return JsonResponse({"status": "Failure", "error": "It is necessary to provide an email and a token"},
                             status=status.HTTP_400_BAD_REQUEST)
