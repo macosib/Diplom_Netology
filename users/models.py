@@ -12,7 +12,6 @@ USER_TYPE_CHOICES = (
 
 )
 
-
 class UserManager(BaseUserManager):
     """
     Класс для управления пользователями
@@ -55,7 +54,6 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
     objects = UserManager()
     USERNAME_FIELD = 'email'
-    username_validator = UnicodeUsernameValidator()
 
     email = models.EmailField(_('email address'), unique=True)
     company = models.CharField(verbose_name='Компания', max_length=60, blank=True)
@@ -65,6 +63,7 @@ class User(AbstractUser):
         choices=USER_TYPE_CHOICES,
         max_length=5,
         default='buyer')
+    username_validator = UnicodeUsernameValidator()
     username = models.CharField(
         _('username'),
         max_length=150,
@@ -115,7 +114,7 @@ class Contact(models.Model):
 
 class ConfirmEmailToken(models.Model):
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         related_name='confirm_email_tokens',
         on_delete=models.CASCADE,
         verbose_name=_("The User which is associated to this password reset token")

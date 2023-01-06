@@ -1,4 +1,6 @@
+from django.contrib.auth.backends import UserModel
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth import authenticate
 from rest_framework import serializers
 
 from users.models import User, Contact
@@ -18,7 +20,7 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'email', 'company', 'position', 'password', 'password_confirm')
+        fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'password', 'password_confirm')
         read_only_fields = ('id',)
 
     def validate(self, data):
@@ -36,6 +38,30 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
                 {'password': error}
             )
         return data
+
+    def create(self, validated_data):
+        password = validated_data.pop('password')
+        user = User(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+class AccountLoginSerializer(serializers.Serializer):
+    email = serializers.CharField(required=True)
+    password = serializers.CharField(max_length=128, write_only=True, required=True)
+
+    def validate(self, data):
+        password = data['password']
+        email = data['email']
+        user = authenticate(username=email, password=password)
+        if user is None or not user.is_active:
+            raise serializers.ValidationError(
+                {"status": "Failure", "error": "Failed to authorize"}
+            )
+        return user
+
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     contacts = ContactSerializer(read_only=True, many=True)
