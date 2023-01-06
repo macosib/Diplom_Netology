@@ -37,10 +37,12 @@ class AccountSerializer(serializers.ModelSerializer):
 
 class AccountRegisterSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True, required=True)
+    type = serializers.CharField(write_only=True, required=False)
 
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'password', 'password_confirm')
+        fields = (
+        'id', 'first_name', 'last_name', 'email', 'company', 'position', 'password', 'password_confirm', 'type')
         read_only_fields = ('id',)
 
     def validate(self, data):
