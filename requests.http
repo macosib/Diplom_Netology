@@ -33,3 +33,7 @@ Authorization: Token {{Token}}
 ### Просмотр товаров
 GET http://127.0.0.1:8000/api/v1/products
 Authorization: Token {{Token}}
+
+### Просмотр товаров
+GET http://127.0.0.1:8000/api/v1/products?category_id=224
+Authorization: Token {{Token}}

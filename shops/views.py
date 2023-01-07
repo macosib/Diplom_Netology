@@ -1,5 +1,5 @@
 import yaml
-from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 from requests import get
 from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from yaml import SafeLoader
 
+from shops.filters import ProductInfoFilter
 from shops.models import Shop, Category, ProductInfo, Product, Parameter, ProductParameter
 from shops.permissions import IsShop
 from shops.serializers import PartnerUpdateSerializer, CategorySerializer, ShopSerializer, ProductInfoSerializer
@@ -66,6 +67,7 @@ class PartnerUpdate(APIView):
             'message': "Data uploaded successfully"
         }, status=status.HTTP_200_OK)
 
+
 class PartnerState(RetrieveUpdateAPIView):
     """
     Класс для работы со статусом поставщика
@@ -98,31 +100,11 @@ class ProductView(ListAPIView):
     """
     Класс для поиска товаров
     """
-
+    queryset = ProductInfo.objects.select_related('shop', 'product__category').prefetch_related(
+        'product_parameters__parameter').distinct()
     permission_classes = [IsAuthenticated]
     serializer_class = ProductInfoSerializer
-    # queryset = ProductInfo.objects.select_related(
-    #         'shop', 'product__category').prefetch_related(
-    #         'product_parameters__parameter').distinct()
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProductInfoFilter
 
-    def get(self, request, *args, **kwargs):
-
-        query = Q(shop__state=True)
-        shop_id = request.query_params.get('shop_id')
-        category_id = request.query_params.get('category_id')
-
-        if shop_id:
-            query = query & Q(shop_id=shop_id)
-
-        if category_id:
-            query = query & Q(product__category_id=category_id)
-
-        queryset = ProductInfo.objects.filter(
-            query).select_related(
-            'shop', 'product__category').prefetch_related(
-            'product_parameters__parameter').distinct()
-
-        serializer = ProductInfoSerializer(queryset, many=True)
-
-        return Response(serializer.data)
 
