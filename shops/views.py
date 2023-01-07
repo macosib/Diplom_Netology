@@ -14,10 +14,6 @@ from shops.serializers import PartnerUpdateSerializer, CategorySerializer, ShopS
 from users.permisssions import IsOwner
 
 
-import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
-
 class PartnerUpdate(APIView):
     permission_classes = [IsAuthenticated, IsShop]
     serializer_class = PartnerUpdateSerializer
@@ -27,30 +23,21 @@ class PartnerUpdate(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = PartnerUpdateSerializer(data=request.data)
-        print(serializer.is_valid())
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         url = serializer.validated_data.get('url')
-        print(url)
-
-        session = requests.Session()
-        retry = Retry(connect=3, backoff_factor=0.5)
-        adapter = HTTPAdapter(max_retries=retry)
-        session.mount('http://', adapter)
-        session.mount('https://', adapter)
-
-        stream = session.get(url)
-
-        #
-        # # stream = get(url).content
-        # data = yaml.load(stream, Loader=SafeLoader)
         try:
             stream = get(url).content
             data = yaml.load(stream, Loader=SafeLoader)
+            # with open("./data/upload.yaml", "r") as stream:
+            #     try:
+            #         data = yaml.safe_load(stream)
+            #     except yaml.YAMLError as exc:
+            #         print(exc)
         except Exception as error:
+            print(error)
             return Response({"status": "Failure", "error": "Failed to read file"}, status=status.HTTP_400_BAD_REQUEST)
 
-        print(data)
         shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
 
         for category in data['categories']:
@@ -79,6 +66,14 @@ class PartnerUpdate(APIView):
             'message': "Data uploaded successfully"
         }, status=status.HTTP_200_OK)
 
+class PartnerState(RetrieveUpdateAPIView):
+    """
+    Класс для работы со статусом поставщика
+    """
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer
+    permission_classes = [IsAuthenticated, IsShop, IsOwner]
+
 
 class CategoryView(ListAPIView):
     """
@@ -99,7 +94,7 @@ class ShopView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class ProductView(APIView):
+class ProductView(ListAPIView):
     """
     Класс для поиска товаров
     """
@@ -128,11 +123,3 @@ class ProductView(APIView):
 
         return Response(serializer.data)
 
-
-class PartnerState(RetrieveUpdateAPIView):
-    """
-    Класс для работы со статусом поставщика
-    """
-    queryset = Shop.objects.all()
-    serializer_class = ShopSerializer
-    permission_classes = [IsAuthenticated, IsShop, IsOwner]
