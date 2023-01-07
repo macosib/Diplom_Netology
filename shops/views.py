@@ -79,7 +79,7 @@ class ShopView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class ProductInfoView(APIView):
+class ProductView(APIView):
     """
     Класс для поиска товаров
     """
