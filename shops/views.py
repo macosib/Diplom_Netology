@@ -14,6 +14,10 @@ from shops.serializers import PartnerUpdateSerializer, CategorySerializer, ShopS
 from users.permisssions import IsOwner
 
 
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
 class PartnerUpdate(APIView):
     permission_classes = [IsAuthenticated, IsShop]
     serializer_class = PartnerUpdateSerializer
@@ -23,16 +27,32 @@ class PartnerUpdate(APIView):
 
     def post(self, request, *args, **kwargs):
         serializer = PartnerUpdateSerializer(data=request.data)
+        print(serializer.is_valid())
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         url = serializer.validated_data.get('url')
+        print(url)
+
+        session = requests.Session()
+        retry = Retry(connect=3, backoff_factor=0.5)
+        adapter = HTTPAdapter(max_retries=retry)
+        session.mount('http://', adapter)
+        session.mount('https://', adapter)
+
+        stream = session.get(url)
+
+        #
+        # # stream = get(url).content
+        # data = yaml.load(stream, Loader=SafeLoader)
         try:
             stream = get(url).content
             data = yaml.load(stream, Loader=SafeLoader)
         except Exception as error:
             return Response({"status": "Failure", "error": "Failed to read file"}, status=status.HTTP_400_BAD_REQUEST)
 
+        print(data)
         shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
+
         for category in data['categories']:
             category_object, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
             category_object.shops.add(shop.id)
