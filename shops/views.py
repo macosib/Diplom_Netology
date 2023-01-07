@@ -101,6 +101,9 @@ class ProductView(ListAPIView):
 
     permission_classes = [IsAuthenticated]
     serializer_class = ProductInfoSerializer
+    # queryset = ProductInfo.objects.select_related(
+    #         'shop', 'product__category').prefetch_related(
+    #         'product_parameters__parameter').distinct()
 
     def get(self, request, *args, **kwargs):
 

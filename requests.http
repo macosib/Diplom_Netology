@@ -1,4 +1,4 @@
-###
+### Загрузка новых товаров
 POST {{Host}}partner/update
 Authorization: Token {{Token}}
 Content-Type:application/json
@@ -8,12 +8,10 @@ Content-Type:application/json
   "https://raw.githubusercontent.com/macosib/Diplom_Netology/master/data/upload.yaml"
 }
 
-
 ### Просмотр статуса магазина
 GET {{Host}}partner/state/1
 Authorization: Token {{Token}}
 Content-Type:application/json
-
 
 ### Изменение статуса магазина
 PUT {{Host}}partner/state/1
@@ -28,10 +26,10 @@ Content-Type:application/json
 GET http://127.0.0.1:8000/api/v1/categories
 Authorization: Token {{Token}}
 
-###
+### Просмотр магазинов
 GET http://127.0.0.1:8000/api/v1/shops
 Authorization: Token {{Token}}
 
-###
+### Просмотр товаров
 GET http://127.0.0.1:8000/api/v1/products
 Authorization: Token {{Token}}
