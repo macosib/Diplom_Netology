@@ -15,6 +15,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class ShopSerializer(serializers.ModelSerializer):
+
+    state = serializers.BooleanField(default=True)
+
     class Meta:
         model = Shop
         fields = ('id', 'name', 'url', 'state',)
