@@ -42,7 +42,7 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = (
-        'id', 'first_name', 'last_name', 'email', 'company', 'position', 'password', 'password_confirm', 'type')
+            'id', 'first_name', 'last_name', 'email', 'company', 'position', 'password', 'password_confirm', 'type')
         read_only_fields = ('id',)
 
     def validate(self, data):
@@ -56,9 +56,7 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
                 raise ValueError("You need to confirm the password. Passwords don't match")
             validate_password(password)
         except Exception as error:
-            raise serializers.ValidationError(
-                {'password': error}
-            )
+            raise serializers.ValidationError({"status": "Failure", "error": error})
         return data
 
     def create(self, validated_data):

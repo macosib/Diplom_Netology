@@ -1,5 +1,5 @@
 ### Загрузка новых товаров
-POST {{Host}}partner/update
+POST {{Host}}/partner/update
 Authorization: Token {{Token}}
 Content-Type:application/json
 
@@ -9,12 +9,12 @@ Content-Type:application/json
 }
 
 ### Просмотр статуса магазина
-GET {{Host}}partner/state/1
+GET {{Host}}/partner/state/1
 Authorization: Token {{Token}}
 Content-Type:application/json
 
 ### Изменение статуса магазина
-PUT {{Host}}partner/state/1
+PUT {{Host}}/partner/state/1
 Authorization: Token {{Token}}
 Content-Type:application/json
 
@@ -23,17 +23,57 @@ Content-Type:application/json
 }
 
 ### Просмотр категорий
-GET http://127.0.0.1:8000/api/v1/categories
+GET {{Host}}/categories
 Authorization: Token {{Token}}
 
 ### Просмотр магазинов
-GET http://127.0.0.1:8000/api/v1/shops
+GET {{Host}}/shops
 Authorization: Token {{Token}}
 
 ### Просмотр товаров
-GET http://127.0.0.1:8000/api/v1/products
+GET {{Host}}/products
 Authorization: Token {{Token}}
 
 ### Просмотр товаров
-GET http://127.0.0.1:8000/api/v1/products?category_id=224
+GET {{Host}}/products?category_id=224
 Authorization: Token {{Token}}
+
+
+
+###
+POST {{Host}}/basket
+Authorization: Token {{Token}}
+Content-Type:application/json
+
+ {
+   "items":
+   [
+     {"product_info": 1,
+     "quantity": 4
+},
+     {"product_info": 2,
+     "quantity": 3
+}
+   ]
+   }
+###
+PUT {{Host}}/basket
+Authorization: Token {{Token}}
+Content-Type:application/json
+
+ {
+   "items":
+   [
+     {"product_info": 1,
+     "quantity": 1
+},
+     {"product_info": 2,
+     "quantity": 3
+}
+   ]
+ }
+
+###
+DELETE {{Host}}/basket
+Authorization: Token {{Token}}
+Content-Type:application/json
