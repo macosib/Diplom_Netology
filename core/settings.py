@@ -154,3 +154,13 @@ REST_FRAMEWORK = {
     ),
 
 }
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_USE_TLS = True
+EMAIL_HOST = 'smtp.mail.ru'
+EMAIL_HOST_USER = 'Your_user'
+EMAIL_HOST_PASSWORD = 'Your_password'
+EMAIL_PORT = '465'
+EMAIL_USE_SSL = True
+SERVER_EMAIL = EMAIL_HOST_USER

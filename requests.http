@@ -1,20 +1,94 @@
-### Загрузка новых товаров
+### Регистрация нового пользователя
+POST {{Host}}/user/register
+Content-Type: application/json
+
+{
+  "first_name": "Oleg",
+  "last_name": "Makarov",
+  "email": "macosib@yandex.ru",
+  "password": "Testpassword12345",
+  "password_confirm": "Testpassword12345",
+  "company": "Ecom",
+  "position": "Developer"
+}
+
+### Подтвеждение регистрации нового пользователя. Токен можно получить из почты или таблицы users_confirmemailtoken
+POST http://127.0.0.1:8000/api/v1/user/register/confirm
+Content-Type: application/json
+
+{
+  "email": "macosib@yandex.ru",
+  "token": "e940df6b9fca666ceb57b"
+}
+
+### Аутентификация пользователя и получение токена
+POST http://127.0.0.1:8000/api/v1/user/login
+Content-Type: application/json
+
+{
+  "email": "macosib@yandex.ru",
+  "password": "Testpassword12345"
+}
+
+### Создание нового контакта пользователя
+POST {{Host}}/user/contact/
+Authorization: Token {{Token}}
+Content-Type: application/json
+
+{
+  "city": "Novosibirsk",
+  "street": "Zarovnogo2",
+  "house": "126",
+  "apartment": "12",
+  "phone": "+79999999999"
+}
+
+### Просмотр всех контактов пользователя
+GET {{Host}}/user/contact/
+Authorization: Token {{Token}}
+
+### Просмотр контакта пользователя. id контакта возвращается в ответе при создании.
+GET {{Host}}/user/contact/{id}/
+Authorization: Token {{Token}}
+
+
+### Изменение контакта пользователя. id контакта возвращается в ответе при создании.
+PUT {{Host}}/user/contact/{id}/
+Authorization: Token {{Token}}
+Content-Type: application/json
+
+{
+  "city": "Novosibirsk",
+  "street": "Zarovnogo V",
+  "house": "126",
+  "apartment": "1",
+  "phone": "+79999999999"
+}
+
+### Удаление контакта пользователя. id контакта возвращается в ответе при создании.
+DELETE {{Host}}/user/contact/{id}/
+Authorization: Token {{Token}}
+Content-Type: application/json
+
+
+
+### Загрузка новых товаров. Необходимо проставить у контакта type=shop.
+### При ошибке загрузки с github можно загрузить из файла, для этого необходимо расскоментировать код.
 POST {{Host}}/partner/update
 Authorization: Token {{Token}}
 Content-Type:application/json
 
 {
-  "url":
-  "https://raw.githubusercontent.com/macosib/Diplom_Netology/master/data/upload.yaml"
+  "url": "https://raw.githubusercontent.com/macosib/Diplom_Netology/master/data/upload.yaml"
 }
 
-### Просмотр статуса магазина
-GET {{Host}}/partner/state/1
+### Просмотр статуса магазина. Необходимо указать id магазина
+GET {{Host}}/partner/state/{id}
 Authorization: Token {{Token}}
 Content-Type:application/json
 
-### Изменение статуса магазина
-PUT {{Host}}/partner/state/1
+### Изменение статуса магазина. Необходимо указать id магазина
+PUT {{Host}}/partner/state/{id}
 Authorization: Token {{Token}}
 Content-Type:application/json
 
@@ -38,42 +112,72 @@ Authorization: Token {{Token}}
 GET {{Host}}/products?category_id=224
 Authorization: Token {{Token}}
 
-
-
-###
+### Добавить товар в корзину
 POST {{Host}}/basket
 Authorization: Token {{Token}}
 Content-Type:application/json
 
- {
-   "items":
-   [
-     {"product_info": 1,
-     "quantity": 4
-},
-     {"product_info": 2,
-     "quantity": 3
+{
+  "items": [
+    {
+      "product_info": 5,
+      "quantity": 4
+    },
+    {
+      "product_info": 6,
+      "quantity": 3
+    }
+  ]
 }
-   ]
-   }
-###
+
+### Изменить товары в корзине
 PUT {{Host}}/basket
 Authorization: Token {{Token}}
 Content-Type:application/json
 
- {
-   "items":
-   [
-     {"product_info": 1,
-     "quantity": 1
-},
-     {"product_info": 2,
-     "quantity": 3
+{
+  "items": [
+    {
+      "product_info": 5,
+      "quantity": 1
+    },
+    {
+      "product_info": 6,
+      "quantity": 3
+    }
+  ]
 }
-   ]
- }
 
-###
+### Очистить корзину
 DELETE {{Host}}/basket
+Authorization: Token {{Token}}
+Content-Type:application/json
+
+
+### Получить список товаров в корзине
+GET {{Host}}/basket
+Authorization: Token {{Token}}
+Content-Type:application/json
+
+
+
+### Получить список заказов
+GET {{Host}}/order
+Authorization: Token {{Token}}
+Content-Type:application/json
+
+
+### Подтвердить список заказов
+POST {{Host}}/order
+Authorization: Token {{Token}}
+Content-Type:application/json
+
+{
+  "id": "9",
+  "contact": "31"
+}
+
+### Получить список заказов для поставщиков
+GET {{Host}}/partner/orders
 Authorization: Token {{Token}}
 Content-Type:application/json

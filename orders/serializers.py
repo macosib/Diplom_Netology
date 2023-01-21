@@ -1,7 +1,9 @@
+from django.db.models import Q
 from rest_framework import serializers
 
 from orders.models import OrderItem, Order
 from shops.models import ProductInfo
+from users.models import Contact
 from users.serializers import AccountContactSerializer
 
 
@@ -13,6 +15,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'order': {'write_only': True}
         }
+
 
 class BasketSerializer(serializers.ModelSerializer):
     ordered_items = OrderItemSerializer(many=True, read_only=True)
@@ -69,3 +72,30 @@ class BasketSerializer(serializers.ModelSerializer):
         instance.ordered_items.all().delete()
         instance = super().create(**validated_data)
         return instance
+
+
+class OrderSerializer(serializers.Serializer):
+    id = serializers.IntegerField(write_only=True)
+    contact = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Order
+        fields = ('id', 'contact')
+
+    def validate(self, data):
+        order_id = data.get('id')
+        contact_id = data.get('contact')
+        user = self.context["request"].user
+
+        contact = Contact.objects.filter(Q(user_id=user.id) & Q(id=contact_id)).first()
+        order = Order.objects.filter(Q(id=order_id) & Q(user_id=user.id)).first()
+
+        if not contact:
+            raise serializers.ValidationError(
+                {"status": "Failure", "error": "To confirm the order, you need to add contacts"}
+            )
+        if not order:
+            raise serializers.ValidationError(
+                {"status": "Failure", "error": "The order does not exist"}
+            )
+        return order

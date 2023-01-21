@@ -31,9 +31,6 @@ class AccountSerializer(serializers.ModelSerializer):
         fields = ('id', 'first_name', 'last_name', 'email', 'company', 'position', 'contacts')
         read_only_fields = ('id',)
 
-    # def save(self):
-    #     user = CurrentUserDefault()
-
 
 class AccountRegisterSerializer(serializers.ModelSerializer):
     password_confirm = serializers.CharField(write_only=True, required=True)

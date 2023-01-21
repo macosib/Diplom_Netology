@@ -23,7 +23,6 @@ class RegisterAccountView(CreateAPIView):
     serializer_class = AccountRegisterSerializer
 
     def post(self, request, *args, **kwargs):
-
         serializer = AccountRegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -33,8 +32,7 @@ class RegisterAccountView(CreateAPIView):
                 'message': "Congratulations on your successful registration. Please confirm your email"
             }
             return Response(response, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ConfirmAccountView(APIView):
@@ -50,13 +48,8 @@ class ConfirmAccountView(APIView):
             token.user.is_active = True
             token.user.save()
             token.delete()
-            return JsonResponse({
-                "status": "Success",
-                'message': "Account confirmed"
-            }, status=status.HTTP_200_OK)
-
-        return JsonResponse({"status": "Failure", "error": "It is necessary to provide an email and a token"},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse({"status": "Success", 'message': "Account confirmed"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginAccountView(APIView):
