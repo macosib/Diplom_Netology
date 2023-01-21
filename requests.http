@@ -13,16 +13,16 @@ Content-Type: application/json
 }
 
 ### Подтвеждение регистрации нового пользователя. Токен можно получить из почты или таблицы users_confirmemailtoken
-POST http://127.0.0.1:8000/api/v1/user/register/confirm
+POST {{Host}}/user/register/confirm
 Content-Type: application/json
 
 {
   "email": "macosib@yandex.ru",
-  "token": "e940df6b9fca666ceb57b"
+  "token": "933b11c4ae4aa279b8087e06030269b8c486f5ba1c58d425f"
 }
 
 ### Аутентификация пользователя и получение токена
-POST http://127.0.0.1:8000/api/v1/user/login
+POST {{Host}}/user/login
 Content-Type: application/json
 
 {
