@@ -6,46 +6,114 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('shops', '0001_initial'),
+        ("shops", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('users', '0003_alter_confirmemailtoken_token'),
+        ("users", "0003_alter_confirmemailtoken_token"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Order',
+            name="Order",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('dt', models.DateTimeField(auto_now_add=True)),
-                ('state', models.CharField(choices=[('basket', 'Статус корзины'), ('new', 'Новый'), ('confirmed', 'Подтвержден'), ('assembled', 'Собран'), ('sent', 'Отправлен'), ('delivered', 'Доставлен'), ('canceled', 'Отменен')], max_length=15, verbose_name='Статус')),
-                ('contact', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='users.contact', verbose_name='Контакт')),
-                ('user', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, related_name='orders', to=settings.AUTH_USER_MODEL, verbose_name='Пользователь')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("dt", models.DateTimeField(auto_now_add=True)),
+                (
+                    "state",
+                    models.CharField(
+                        choices=[
+                            ("basket", "Статус корзины"),
+                            ("new", "Новый"),
+                            ("confirmed", "Подтвержден"),
+                            ("assembled", "Собран"),
+                            ("sent", "Отправлен"),
+                            ("delivered", "Доставлен"),
+                            ("canceled", "Отменен"),
+                        ],
+                        max_length=15,
+                        verbose_name="Статус",
+                    ),
+                ),
+                (
+                    "contact",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="users.contact",
+                        verbose_name="Контакт",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="orders",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Пользователь",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Заказ',
-                'verbose_name_plural': 'Список заказ',
-                'ordering': ('-dt',),
+                "verbose_name": "Заказ",
+                "verbose_name_plural": "Список заказ",
+                "ordering": ("-dt",),
             },
         ),
         migrations.CreateModel(
-            name='OrderItem',
+            name="OrderItem",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('quantity', models.PositiveIntegerField(verbose_name='Количество')),
-                ('order', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, related_name='ordered_items', to='orders.order', verbose_name='Заказ')),
-                ('product_info', models.ForeignKey(blank=True, on_delete=django.db.models.deletion.CASCADE, related_name='ordered_items', to='shops.productinfo', verbose_name='Информация о продукте')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("quantity", models.PositiveIntegerField(verbose_name="Количество")),
+                (
+                    "order",
+                    models.ForeignKey(
+                        blank=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="ordered_items",
+                        to="orders.order",
+                        verbose_name="Заказ",
+                    ),
+                ),
+                (
+                    "product_info",
+                    models.ForeignKey(
+                        blank=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="ordered_items",
+                        to="shops.productinfo",
+                        verbose_name="Информация о продукте",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Заказанная позиция',
-                'verbose_name_plural': 'Список заказанных позиций',
+                "verbose_name": "Заказанная позиция",
+                "verbose_name_plural": "Список заказанных позиций",
             },
         ),
         migrations.AddConstraint(
-            model_name='orderitem',
-            constraint=models.UniqueConstraint(fields=('order_id', 'product_info'), name='unique_order_item'),
+            model_name="orderitem",
+            constraint=models.UniqueConstraint(
+                fields=("order_id", "product_info"), name="unique_order_item"
+            ),
         ),
     ]

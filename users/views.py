@@ -10,8 +10,12 @@ from rest_framework.viewsets import ModelViewSet
 from users.models import User, Contact
 from users.permisssions import IsOwner
 from users.serializers import (
-    AccountRegisterSerializer, AccountLoginSerializer, AccountConfirmSerializer, AccountContactSerializer,
-    AccountSerializer, )
+    AccountRegisterSerializer,
+    AccountLoginSerializer,
+    AccountConfirmSerializer,
+    AccountContactSerializer,
+    AccountSerializer,
+)
 from users.tasks import new_user_registered
 
 
@@ -19,6 +23,7 @@ class RegisterAccountView(CreateAPIView):
     """
     Регистрируем нового пользователя и отпрляем письмо с токеном для завершения регистрации.
     """
+
     queryset = User.objects.all()
     serializer_class = AccountRegisterSerializer
 
@@ -29,7 +34,7 @@ class RegisterAccountView(CreateAPIView):
             new_user_registered.delay(user)
             response = {
                 "status": "Success",
-                'message': "Congratulations on your successful registration. Please confirm your email"
+                "message": "Congratulations on your successful registration. Please confirm your email",
             }
             return Response(response, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -39,6 +44,7 @@ class ConfirmAccountView(APIView):
     """
     Класс для подтверждения регистрации пользователя.
     """
+
     serializer_class = AccountConfirmSerializer
 
     def post(self, request):
@@ -48,7 +54,10 @@ class ConfirmAccountView(APIView):
             token.user.is_active = True
             token.user.save()
             token.delete()
-            return JsonResponse({"status": "Success", 'message': "Account confirmed"}, status=status.HTTP_200_OK)
+            return JsonResponse(
+                {"status": "Success", "message": "Account confirmed"},
+                status=status.HTTP_200_OK,
+            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -56,6 +65,7 @@ class LoginAccountView(APIView):
     """
     Аутентификация пользователя и получение токена
     """
+
     serializer_class = AccountLoginSerializer
 
     def post(self, request):
@@ -63,7 +73,9 @@ class LoginAccountView(APIView):
         if serializer.is_valid():
             user = serializer.validated_data
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({'status': 'Success', 'token': token.key}, status=status.HTTP_200_OK)
+            return Response(
+                {"status": "Success", "token": token.key}, status=status.HTTP_200_OK
+            )
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
@@ -71,6 +83,7 @@ class AccountContactsViewSet(ModelViewSet):
     """
     Создание, получение, изменение, удаление контактных данных пользователя.
     """
+
     queryset = Contact.objects.prefetch_related()
     serializer_class = AccountContactSerializer
     permission_classes = [IsAuthenticated, IsOwner]
@@ -80,6 +93,7 @@ class AccountDetailsView(APIView):
     """
     Просмотр и изменение профиля пользователя.
     """
+
     queryset = User.objects.prefetch_related()
     serializer_class = AccountSerializer
     permission_classes = [IsAuthenticated, IsOwner]
@@ -90,7 +104,9 @@ class AccountDetailsView(APIView):
         return Response(serializer.data)
 
     def patch(self, request):
-        serializer = self.serializer_class(instance=request.user, data=request.data, partial=True)
+        serializer = self.serializer_class(
+            instance=request.user, data=request.data, partial=True
+        )
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

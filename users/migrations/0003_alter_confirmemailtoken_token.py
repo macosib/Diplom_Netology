@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0002_alter_user_options_and_more'),
+        ("users", "0002_alter_user_options_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='confirmemailtoken',
-            name='token',
-            field=models.CharField(db_index=True, max_length=64, unique=True, verbose_name='Token'),
+            model_name="confirmemailtoken",
+            name="token",
+            field=models.CharField(
+                db_index=True, max_length=64, unique=True, verbose_name="Token"
+            ),
         ),
     ]

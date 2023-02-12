@@ -4,19 +4,22 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('users', '0001_initial'),
+        ("users", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='user',
-            options={'ordering': ('email',), 'verbose_name': 'User', 'verbose_name_plural': 'User list'},
+            name="user",
+            options={
+                "ordering": ("email",),
+                "verbose_name": "User",
+                "verbose_name_plural": "User list",
+            },
         ),
         migrations.RenameField(
-            model_name='confirmemailtoken',
-            old_name='key',
-            new_name='token',
+            model_name="confirmemailtoken",
+            old_name="key",
+            new_name="token",
         ),
     ]
