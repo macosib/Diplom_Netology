@@ -12,7 +12,7 @@ from users.permisssions import IsOwner
 from users.serializers import (
     AccountRegisterSerializer, AccountLoginSerializer, AccountConfirmSerializer, AccountContactSerializer,
     AccountSerializer, )
-from users.signals import new_user_registered
+from users.tasks import new_user_registered
 
 
 class RegisterAccountView(CreateAPIView):
@@ -26,7 +26,7 @@ class RegisterAccountView(CreateAPIView):
         serializer = AccountRegisterSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            new_user_registered.send(sender=self.__class__, user=user)
+            new_user_registered.delay(user)
             response = {
                 "status": "Success",
                 'message': "Congratulations on your successful registration. Please confirm your email"

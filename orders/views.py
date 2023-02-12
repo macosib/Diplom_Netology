@@ -2,11 +2,13 @@ from django.db.models import Sum, F
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 
 from orders.models import Order
 from orders.serializers import BasketSerializer, OrderSerializer
 from shops.permissions import IsShop
+from orders.tasks import new_order
 
 
 class BasketView(APIView):
@@ -18,6 +20,7 @@ class BasketView(APIView):
     permission_classes = [IsAuthenticated]
     queryset = Order.objects.filter(state=True)
     serializer_class = BasketSerializer
+
 
     def get(self, request):
         basket = Order.objects.filter(
@@ -77,6 +80,7 @@ class OrderView(APIView):
     permission_classes = [IsAuthenticated]
     serializer_class = BasketSerializer
 
+
     def get(self, request, *args, **kwargs):
         order = Order.objects.filter(
             user_id=request.user.id).exclude(state='basket').prefetch_related(
@@ -92,6 +96,6 @@ class OrderView(APIView):
             order = serializer.validated_data
             order.state = 'new'
             order.save()
-            # new_order.send(sender=self.__class__, user_id=request.user.id)
+            new_order.delay(order, request.user)
             return Response({"status": "Success", "message": "Products added"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

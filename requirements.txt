@@ -13,5 +13,6 @@ requests==2.28.1
 sqlparse==0.4.3
 urllib3==1.26.13
 gunicorn
-django-filter
-
+django-filter~=22.1
+celery~=5.2.7
+redis

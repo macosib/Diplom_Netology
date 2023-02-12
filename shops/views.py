@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.views import APIView
 from yaml import SafeLoader
 
@@ -77,6 +78,7 @@ class PartnerState(RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsShop, IsOwner]
 
 
+
 class CategoryView(ListAPIView):
     """
     Класс для просмотра категорий
@@ -84,6 +86,7 @@ class CategoryView(ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]
+
 
 
 class ShopView(ListAPIView):
